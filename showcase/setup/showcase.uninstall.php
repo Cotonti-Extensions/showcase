@@ -21,4 +21,4 @@ $db->delete($db_tag_references, "tag_area = 'showcase'");
 $db->delete($db_com, "com_area = 'showcase'");
 $db->delete($db_rated, "rated_area = 'showcase'");
 $db->delete($db_ratings, "rating_area = 'showcase'");
-?>
+

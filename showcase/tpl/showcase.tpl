@@ -8,10 +8,10 @@
 			<!-- BEGIN: ROW -->
 			<tr>
 				<!-- BEGIN: CELL -->
-				<td class="{ODDEVEN}" style="width:30%;text-align:center">
+				<td class="{ODDEVEN}" style="width:30%; text-align:center">
 					<h4><a href="{ITEM_LINK}">{ITEM_TITLE}</a></h4>
-						{ITEM_IMAGE}<br />
-					<strong>{php.L.Tags}:</strong> {ITEM_TAGS}<br />
+					{ITEM_IMAGE}<br />
+					<strong>{PHP.L.Tags}:</strong> {ITEM_TAGS}<br />
 					{ITEM_RATINGS}{ITEM_COMMENTS}<br />
 				</td>
 				<!-- END: CELL -->
@@ -21,10 +21,10 @@
 		<div class="pagnav">{PAGEPREV} {PAGENAV} {PAGENEXT}</div>
 
 		<!-- BEGIN: FORM -->
-		<h4>{php.L.Add_another}</h4>
+		<h4>{PHP.L.Add_another}1111</h4>
 		<form action="{ACTION}" method="post">
-			<input type="text" name="title" maxlength="{php.cfg.showcase.length}" value="{php.L.Title}" />
-			http://<input type="text" name="domain" value="domain.tld" />
+			<input type="text" name="title" maxlength="{php.cfg.showcase.length}" placeholder="{php.L.Title}" />
+			<input type="text" name="domain" placeholder="https://domain.tld" />
 			<textarea name="descr" maxlength="255">{php.L.Short_descr}</textarea>
 			<input type="text" name="tags" value="{php.L.Tags_input}" /><br />
 			<input type="submit" value="{php.L.Submit}" />

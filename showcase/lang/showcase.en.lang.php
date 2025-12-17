@@ -2,6 +2,12 @@
 /* 
  * English language file for Showcase plugin
  */
+$L['cfg_per_row'] = array('Сайтов в одной строке');
+$L['cfg_per_page'] = array('Сайтов на странице');
+$L['cfg_length'] = array('Макс. длина заголовка');
+$L['cfg_ApiFlashAccessKey'] = 'ApiFlash access key';
+$L['cfg_ApiFlashAccessKey_hint'] = 'Вы можете получить его в <a href="https://apiflash.com/dashboard/access_keys" target="_blank">'
+    . 'своем аккаунте</a> ApiFlash';
 
 $L['Add_another'] = 'Add another site';
 $L['Added_successfully'] = 'Successfully added new domain';

@@ -9,4 +9,4 @@ CREATE TABLE IF NOT EXISTS `cot_showcase` (
 	PRIMARY KEY (`sc_id`),
 	KEY (`sc_domain`),
 	KEY (`sc_date`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+);

@@ -3,14 +3,17 @@
  * Russian language file for site showcase plugin
  */
 
-$L['cfg_access_key'] = array('ShrinkTheWeb access key');
-$L['cfg_secret_key'] = array('ShrinkTheWeb secret key');
-$L['cfg_cache_days'] = array('Дней хранения кеша миниатюр');
+//$L['cfg_access_key'] = array('ShrinkTheWeb access key');
+//$L['cfg_secret_key'] = array('ShrinkTheWeb secret key');
+//$L['cfg_cache_days'] = array('Дней хранения кеша миниатюр');
 $L['cfg_per_row'] = array('Сайтов в одной строке');
 $L['cfg_per_page'] = array('Сайтов на странице');
 $L['cfg_length'] = array('Макс. длина заголовка');
-$L['cfg_width'] = array('Ширина миниатюры');
-$L['cfg_height'] = array('Высота миниатюры');
+//$L['cfg_width'] = array('Ширина миниатюры');
+//$L['cfg_height'] = array('Высота миниатюры');
+$L['cfg_ApiFlashAccessKey'] = 'ApiFlash access key';
+$L['cfg_ApiFlashAccessKey_hint'] = 'Вы можете получить его в <a href="https://apiflash.com/dashboard/access_keys" target="_blank">'
+ . 'своем аккаунте</a> ApiFlash';
 
 $L['Add_another'] = 'Добавить ещё сайт';
 $L['Added_successfully'] = 'Новый домен успешно добавлен';

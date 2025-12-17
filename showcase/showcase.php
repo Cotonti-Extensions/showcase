@@ -6,6 +6,10 @@ Hooks=standalone
 [END_COT_EXT]
 ==================== */
 
+use cot\plugins\comments\inc\CommentsService;
+use cot\plugins\comments\inc\CommentsWidget;
+use cot\plugins\showcase\inc\ShowcaseService;
+
 defined('COT_CODE') && defined('COT_PLUG') or die('Wrong URL');
 
 // Table name preset
@@ -182,9 +186,10 @@ else
 	// Import parameters
 	$tag = cot_import('t', 'G', 'TXT');
 	$o = cot_import('o', 'G', 'ALP');
-	list($pg, $d, $durl) = cot_import_pagenav('d', $cfg['plugin']['showcase']['per_page']);
+	[$pg, $d, $durl] = cot_import_pagenav('d', $cfg['plugin']['showcase']['per_page']);
 
 	// Assemble the query
+	$t_from = $t_where = $r_fields = $r_join = '';
 	if (!empty($tag))
 	{
 		$t_query = cot_tag_parse_query($tag, 's.sc_id');
@@ -240,6 +245,7 @@ else
 	$res->closeCursor();
 
 	// Build pagination
+	$url_t = '';
 	if (!empty($tag))
 	{
 		$tag_u = $cfg['plugin']['tags']['translit'] ? cot_translit_encode($tag) : $tag;
@@ -286,6 +292,7 @@ else
 	if ($usr['auth_write'])
 	{
 		// Validation queue
+        $q_where = '';
 		if (!$usr['isadmin']) $q_where = 'AND sc_owner = ' . $usr['id'];
 		$res = $db->query("SELECT sc_id, sc_title FROM `$db_showcase`
 			WHERE sc_active = 0 $q_where");
@@ -316,39 +323,43 @@ else
  * @global array $cfg Cotonti configuration
  * @global array $usr User account
  * @param string $domain Domain
- * @return mixed Input as associative array or false on error
+ * @return array|false Input as associative array or false on error
  */
-function sc_import($domain = '')
+function sc_import(string $domain = '')
 {
 	global $cfg, $usr, $sys;
 
-	if (empty($domain))
-	{
+	if (empty($domain)) {
 		$domain = cot_import('domain', 'P', 'TXT');
-		$domain = preg_replace('#[^\w\-\.]#', '', $domain);
+        $domain = preg_replace('#[^\p{L}\-.\/\:]#u', '', $domain);
 		$in['sc_owner'] = $usr['id'];
 	}
 
-	if (empty($domain)) return false;
+	if (empty($domain)) {
+        return false;
+    }
 
 	// Check if it is a valid domain
-	$data = @file_get_contents("http://$domain");
-	if (!empty($data))
-	{
-		$in['sc_domain'] = $domain;
-		$in['sc_title'] = cot_import('title', 'P', 'TXT');
-		// Get title from page if empty
-		if (empty($in['sc_title'])
-			&& preg_match('#<title>(.+?)</title>#i', $data, $mt))
-			$in['sc_title'] = mb_substr($mt[1], 0,
-				$cfg['plugin']['showcase']['length']);
-		$in['sc_descr'] = cot_import('descr', 'P', 'TXT');
-		$in['sc_date'] = $sys['now'];
-		$in['sc_active'] = $usr['isadmin'] ? 1 : 0;
-		return $in;
-	}
-	else
-		return false;
+    $url = $domain;
+    if (mb_stripos($url, 'http://') === false && mb_stripos($url, 'https://') === false) {
+        $url = 'https://' . $url;
+    }
+	$data = @file_get_contents($url);
+    if (empty($data)) {
+        return false;
+    }
+
+    $in['sc_domain'] = $domain;
+    $in['sc_title'] = cot_import('title', 'P', 'TXT');
+    // Get title from page if empty
+    if (empty($in['sc_title'])
+        && preg_match('#<title>(.+?)</title>#i', $data, $mt))
+        $in['sc_title'] = mb_substr($mt[1], 0,
+            $cfg['plugin']['showcase']['length']);
+    $in['sc_descr'] = cot_import('descr', 'P', 'TXT');
+    $in['sc_date'] = $sys['now'];
+    $in['sc_active'] = $usr['isadmin'] ? 1 : 0;
+    return $in;
 }
 
 /**
@@ -365,18 +376,31 @@ function sc_display($domain, $edit = false, $comments = false)
 	global $t, $row, $cfg, $L, $usr;
 
 	$title = htmlspecialchars($row['sc_title']);
-	$url = 'http://' . $domain;
+
+	$url = $domain;
+    if (mb_stripos($url, 'http://') === false && mb_stripos($url, 'https://') === false) {
+        $url = 'https://' . $url;
+    }
+
 	$item_code = $row['sc_id'];
 	$page_url = cot_url('plug', 'e=showcase&id=' . $item_code);
 
-	$comments_link = cot_comments_link('plug', 'e=showcase&id=' . $item_code, 'showcase', $item_code);
-	$comments_display = cot_comments_display('showcase', $item_code);
-	$comments_count = cot_comments_count('showcase', $item_code);
+	$comments_link = cot_commentsLink('plug', 'e=showcase&id=' . $item_code, 'showcase', $item_code);
+	//$comments_display = cot_comments_display('showcase', $item_code);
+    $comments_display = (new CommentsWidget(
+        [
+            'source' => 'showcase',
+            'sourceId' => $item_code,
+            'extensionCode' => 'showcase',
+        ]
+    ))->run();
+	$comments_count = CommentsService::getInstance()->getCount('showcase', $item_code);
 
 	//list ($ratings_display, $ratings_average) = cot_ratings_display('showcase', $item_code);
 
 	// Clickable tag list
 	$tags = cot_tag_list($item_code, 'showcase');
+	$tag_list = '';
 	if ($edit)
 	{
 		$tag_list = htmlspecialchars(implode(', ', $tags));
@@ -384,15 +408,18 @@ function sc_display($domain, $edit = false, $comments = false)
 	}
 	else
 	{
+		$i = 0;
 		foreach ($tags as $tag)
 		{
-			if ($i++ > 0) $tag_list .= ', ';
+			$i++;
+			if ($i > 0) $tag_list .= ', ';
 			$tag_list .= cot_rc_link(cot_url('plug', 'e=showcase&t=' . $tag), $tag);
 		}
 	}
 
-	// Assign tags
-	$url_encoded = urlencode($domain);
+    $screenShot = ShowcaseService::getInstance()->getScreenshot($domain);
+
+    // Assign tags
 	$t->assign(array(
 		'ITEM_ID' => $row['sc_id'],
 		'ITEM_URL' => $url,
@@ -402,10 +429,13 @@ function sc_display($domain, $edit = false, $comments = false)
 			'<input type="text" name="title" maxlength="'
 				. $cfg['plugin']['showcase']['length'] . '" value="'
 				. $title . '" />' : $title,
-		'ITEM_IMAGE' => <<<HTM
-<img src="http://free.pagepeeker.com/v2/thumbs.php?size=m&url={$url_encoded}" width="200" height="150" alt="{$row['sc_domain']} screenshot" />
-HTM
-		,
+//		'ITEM_IMAGE' => <<<HTM
+//<img src="http://free.pagepeeker.com/v2/thumbs.php?size=m&url={$url_encoded}" width="200" height="150" alt="{$row['sc_domain']} screenshot" />
+//HTM
+//		,
+
+        'ITEM_IMAGE' => '<img src="' . $screenShot . '" height="150" alt="' . $row['sc_domain'] . ' screenshot" />',
+
 		'ITEM_OWNER' => cot_build_user($row['sc_owner'], $row['user_name']),
 		'ITEM_DESCR' => $edit ?
 			'<textarea name="descr" maxlength="255">'
@@ -425,4 +455,3 @@ HTM
 		'ITEM_VALIDATE' => $usr['isadmin'] && !$row['sc_active'] ? cot_rc_link(cot_url('plug', 'e=showcase&id=' . $row['sc_id'] . '&a=validate'), $L['Validate']) : ''
 	));
 }
-?>
