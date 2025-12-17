@@ -5,7 +5,7 @@ This plugin implements a website showcase often called a CSS gallery. It is a ga
 
 See [Live Demo](http://www.cotonti.com/showcase/)
 
-Authors: [Vladimir Sibirov](https://github.com/trustmaster), [Kalnov Alexey](https://github.com/Alex300), Cotonti Team
+Authors: [Vladimir Sibirov](https://github.com/trustmaster), [Alexey Kalnov](https://github.com/Alex300), Cotonti Team
 
 Plugin page: https://www.cotonti.com/extensions/files-media/site-showcase
 
